@@ -8,4 +8,24 @@ const pool = new Pool({
   },
 });
 
+// Function to initialize the database
+const initializeDatabase = async () => {
+  try {
+    await pool.query(`
+          CREATE TABLE IF NOT EXISTS presentations (
+              id SERIAL PRIMARY KEY,
+              title VARCHAR(255) NOT NULL,
+              creator VARCHAR(255) NOT NULL,
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+      `);
+    console.log('Database initialized successfully.');
+  } catch (error) {
+    console.error('Error initializing the database:', error);
+  }
+};
+
+// Call the initialization function
+initializeDatabase();
+
 module.exports = pool;
