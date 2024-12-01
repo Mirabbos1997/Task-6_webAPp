@@ -4,7 +4,7 @@ const http = require("http");
 const cors = require("cors");
 const { Server } = require("socket.io");
 
-const initializeDatabase = require("./initializeDatabase");
+
 require("dotenv").config();
 
 const app = express();
@@ -29,7 +29,6 @@ app.use("/api/users", usersRouter);
 // Setup WebSocket
 setupCollaborationSocket(io);
 
-initializeDatabase();
 
 // Start server
 const PORT = process.env.PORT || 5000;
