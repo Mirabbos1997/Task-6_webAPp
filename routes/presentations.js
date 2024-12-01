@@ -47,37 +47,32 @@ router.post("/create", async (req, res) => {
   }
 });
 
-router.post("/join/:id", async (req, res) => {
-  const { nickname } = req.body;
-  const { id } = req.params;
-
-  if (!nickname || !id) {
-    return res.status(400).send("Nickname and Presentation ID are required");
-  }
+// Join a presentation
+router.post('/join/:id', async (req, res) => {
+  const { id } = req.params; // presentation ID
+  const { nickname } = req.body; // user nickname
 
   try {
-    // Check if the user already exists in the presentation
-    const userCheck = await pool.query(
-      "SELECT * FROM users WHERE nickname = $1 AND presentation_id = $2",
-      [nickname, id]
-    );
+    // Check if the presentation exists
+    const presentation = await pool.query('SELECT * FROM presentations WHERE id = $1', [id]);
 
-    if (userCheck.rows.length > 0) {
-      return res.status(400).send("User already joined the presentation");
+    if (presentation.rows.length === 0) {
+      return res.status(404).json({ error: 'Presentation not found' });
     }
 
-    // Add user to the presentation
-    const result = await pool.query(
-      "INSERT INTO users (nickname, presentation_id) VALUES ($1, $2) RETURNING *",
-      [nickname, id]
+    // Insert user into the `users` table
+    await pool.query(
+      'INSERT INTO users (presentation_id, nickname) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+      [id, nickname]
     );
 
-    res.status(201).json(result.rows[0]);
+    res.status(200).json({ message: `User ${nickname} joined presentation ${id}` });
   } catch (error) {
-    console.error("Error joining presentation:", error);
-    res.status(500).send("Server Error");
+    console.error('Error joining presentation:', error);
+    res.status(500).send('Internal Server Error');
   }
 });
+
 
 
 module.exports = router;

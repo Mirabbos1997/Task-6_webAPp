@@ -33,4 +33,26 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Add a user to the users table
+router.post("/users", async (req, res) => {
+  const { presentation_id, nickname, role } = req.body;
+
+  if (!presentation_id || !nickname) {
+    return res.status(400).json({ error: "Presentation ID and nickname are required" });
+  }
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO users (presentation_id, nickname, role) 
+           VALUES ($1, $2, $3) 
+           RETURNING *`,
+      [presentation_id, nickname, role || "Viewer"] // Default role is Viewer
+    );
+    res.status(201).json({ message: "User added successfully", user: result.rows[0] });
+  } catch (error) {
+    console.error("Error adding user:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 module.exports = router;
